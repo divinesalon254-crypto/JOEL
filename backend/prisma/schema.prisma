@@ -68,6 +68,7 @@ model Customer {
 
   bookings Booking[]
   messages Message[]
+  payments Payment[]
 
   @@map("customers")
 }
@@ -93,6 +94,7 @@ model Booking {
   updatedAt     DateTime @updatedAt
 
   messages      Message[]
+  payment       Payment?
 
   @@map("bookings")
 }
@@ -117,4 +119,41 @@ model Message {
   updatedAt DateTime @updatedAt
 
   @@map("messages")
+}
+
+model Payment {
+  id              Int     @id @default(autoincrement())
+  paymentId       String  @unique
+  
+  customerId      Int
+  customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  bookingId       Int     @unique
+  booking         Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  amount          Float
+  currency        String  @default("KES") // Kenya Shillings for M-Pesa
+  paymentMethod   String  // "mpesa", "credit_card", "debit_card", "paypal", "stripe", "cash"
+  
+  // M-Pesa Details
+  phoneNumber     String?
+  mpesaCode       String? @unique
+  
+  // Card Details (encrypted in production)
+  cardholderName  String?
+  cardLastFour    String?
+  cardBrand       String?
+  expiryMonth     Int?
+  expiryYear      Int?
+  
+  status          String  @default("pending") // pending, completed, failed, refunded
+  transactionId   String?
+  receiptUrl      String?
+  
+  notes           String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("payments")
 }
